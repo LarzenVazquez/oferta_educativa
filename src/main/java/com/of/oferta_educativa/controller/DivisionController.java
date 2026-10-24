@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -99,6 +100,31 @@ public class DivisionController {
 
         Map<String, Object> respuesta = new HashMap<>();
         respuesta.put("mensaje", "División actualizada");
+        respuesta.put("division", guardada);
+        return ResponseEntity.ok(respuesta);
+    }
+
+    // HU03: solicitar desactivacion
+    @PatchMapping("/{id}/solicitar-desactivacion")
+    public ResponseEntity<?> solicitarDesactivacion(@PathVariable Long id) {
+        Optional<Division> encontrada = divisionRepository.findById(id);
+        if (encontrada.isEmpty()) {
+            return mensaje(HttpStatus.NOT_FOUND, "No existe la división con id " + id);
+        }
+        Division division = encontrada.get();
+
+        if (division.getEstadoAprobacion() == EstadoAprobacion.INACTIVO) {
+            return mensaje(HttpStatus.CONFLICT, "La división ya está inactiva");
+        }
+        if (tieneSolicitudPendiente(division)) {
+            return mensaje(HttpStatus.CONFLICT, "La división tiene una solicitud en revisión");
+        }
+
+        division.setEstadoAprobacion(EstadoAprobacion.PENDIENTE_DESACTIVACION);
+        Division guardada = divisionRepository.save(division);
+
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("mensaje", "Solicitud de desactivación enviada");
         respuesta.put("division", guardada);
         return ResponseEntity.ok(respuesta);
     }
