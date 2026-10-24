@@ -11,4 +11,6 @@ public interface DivisionRepository extends JpaRepository<Division, Long> {
     List<Division> findAllByOrderByNombreAsc();
 
     boolean existsByNombreIgnoreCase(String nombre);
+
+    boolean existsByNombreIgnoreCaseAndIdNot(String nombre, Long id);
 }

@@ -10,8 +10,8 @@
       <a class="btn" href="division-form.html">+ División</a>
     </div>
     <table>
-      <thead><tr><th>Nombre</th><th>Descripción</th><th>Estatus</th><th>Aprobación</th></tr></thead>
-      <tbody id="tDivisiones"><tr><td colspan="4" class="empty">Cargando…</td></tr></tbody>
+      <thead><tr><th>Nombre</th><th>Descripción</th><th>Estatus</th><th>Aprobación</th><th></th></tr></thead>
+      <tbody id="tDivisiones"><tr><td colspan="5" class="empty">Cargando…</td></tr></tbody>
     </table>
   </div>
 </main>
@@ -22,14 +22,19 @@ renderHeader();
 async function cargarDivisiones() {
   const $t = document.getElementById('tDivisiones');
   const r = await Api.divisiones.listar();
-  if (!r.ok) { $t.innerHTML = `<tr><td colspan="4" class="empty">No se pudieron cargar las divisiones</td></tr>`; return toast(r.data?.mensaje || 'Error', 'err'); }
-  if (!r.data.length) { $t.innerHTML = `<tr><td colspan="4" class="empty">Sin divisiones registradas</td></tr>`; return; }
+  if (!r.ok) { $t.innerHTML = `<tr><td colspan="5" class="empty">No se pudieron cargar las divisiones</td></tr>`; return toast(r.data?.mensaje || 'Error', 'err'); }
+  if (!r.data.length) { $t.innerHTML = `<tr><td colspan="5" class="empty">Sin divisiones registradas</td></tr>`; return; }
   $t.innerHTML = r.data.map(x => {
+    const bloqueado = ['PENDIENTE', 'PENDIENTE_DESACTIVACION'].includes(x.estadoAprobacion);
+    const puedeDesactivar = bloqueado || x.estadoAprobacion === 'INACTIVO';
     return `<tr>
       <td>${esc(x.nombre)}</td>
       <td>${esc(x.descripcion)}</td>
       <td>${badge(x.estatus)}</td>
       <td>${badge(x.estadoAprobacion)}</td>
+      <td class="actions">
+        <a class="btn sm secondary" ${bloqueado ? 'disabled' : ''} href="division-form.html?id=${x.id}">Editar</a>
+      </td>
     </tr>`;
   }).join('');
 }

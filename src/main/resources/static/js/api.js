@@ -27,7 +27,9 @@ async function request(path, options = {}) {
 const Api = {
   divisiones: {
       listar: () => request('/divisiones'),
-      crear: body => request('/divisiones', { method: 'POST', body })
+      obtener: id => request(`/divisiones/${id}`),
+      crear: body => request('/divisiones', { method: 'POST', body }),
+      editar: (id, body) => request(`/divisiones/${id}`, { method: 'PUT', body })
   }
 };
 
@@ -66,6 +68,11 @@ function pintarErrores(form, errores) {
 function manejarError(form, r) {
   if (r.status === 400 && r.data) pintarErrores(form, r.data);
   else toast((r.data && r.data.mensaje) || 'Ocurrió un error', 'err');
+}
+
+function idDeUrl() {
+  const id = new URLSearchParams(location.search).get('id');
+  return id ? Number(id) : null;
 }
 
 function renderHeader(activo) {
