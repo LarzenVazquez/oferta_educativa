@@ -1,4 +1,4 @@
-package com.of.oferta_educativa.entity;
+package com.oferta_academica.of_academica.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,44 +21,44 @@ import lombok.Data;
 @Data
 public class Carrera {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @NotBlank(message = "El nombre es obligatorio")
-  @Column(nullable = false, length = 150)
-  private String nombre;
+    @NotBlank(message = "El nombre es obligatorio")
+    @Column(nullable = false, length = 150)
+    private String nombre;
 
-  @NotBlank(message = "La descripción es obligatoria")
-  @Column(nullable = false, length = 1000)
-  private String descripcion;
+    @NotBlank(message = "La descripción es obligatoria")
+    @Column(nullable = false, length = 1000)
+    private String descripcion;
 
-  @NotNull(message = "La duración es obligatoria")
-  @Min(value = 1, message = "La duración debe ser de al menos 1 cuatrimestre")
-  @Column(nullable = false)
-  private Integer duracionCuatrimestres;
+    @NotNull(message = "La duración es obligatoria")
+    @Min(value = 1, message = "La duración debe ser de al menos 1 cuatrimestre")
+    @Column(nullable = false)
+    private Integer duracionCuatrimestres;
 
-  @NotNull(message = "La modalidad es obligatoria")
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private Modalidad modalidad;
+    @NotNull(message = "La modalidad es obligatoria")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Modalidad modalidad;
 
-  @NotNull(message = "La división es obligatoria")
-  @ManyToOne
-  @JoinColumn(name = "division_id", nullable = false)
-  private Division division;
+    @NotNull(message = "La división es obligatoria")
+    @ManyToOne
+    @JoinColumn(name = "division_id", nullable = false)
+    private Division division;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private Estatus estatus = Estatus.ACTIVO;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Estatus estatus = Estatus.ACTIVO;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private EstadoAprobacion estadoAprobacion = EstadoAprobacion.BORRADOR;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoAprobacion estadoAprobacion = EstadoAprobacion.BORRADOR;
 
-  @Column(nullable = false)
-  private boolean publicado = false;
+    @Column(nullable = false)
+    private boolean publicado = false;
 
-  @Column(length = 500)
-  private String motivoRechazo;
+    @Column(length = 500)
+    private String motivoRechazo;
 }
