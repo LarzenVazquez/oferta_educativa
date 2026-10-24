@@ -19,14 +19,29 @@
 <script src="js/api.js"></script>
 <script>
 renderHeader();
-const form = document.getElementById('form');
+const form = document.getElementById('form'), id = idDeUrl();
+
+async function precargar() {
+  document.getElementById('titulo').textContent = 'Editar división';
+  const r = await Api.divisiones.obtener(id);
+  if (!r.ok) { toast(r.data?.mensaje || 'Error', 'err'); return; }
+  const d = r.data;
+  form.nombre.value = d.nombre; form.descripcion.value = d.descripcion; form.estatus.value = d.estatus;
+  if (d.estadoAprobacion === 'RECHAZADO' && d.motivoRechazo)
+    document.getElementById('aviso').innerHTML = `<div class="note red"><b>Rechazada:</b> ${esc(d.motivoRechazo)}</div>`;
+  if (['PENDIENTE', 'PENDIENTE_DESACTIVACION'].includes(d.estadoAprobacion)) {
+    document.getElementById('aviso').innerHTML = `<div class="note">Tiene una solicitud en revisión; no se puede modificar.</div>`;
+    form.querySelector('[type=submit]').disabled = true;
+  }
+}
 
 form.addEventListener('submit', async e => {
   e.preventDefault(); limpiarErrores(form);
   const body = { nombre: form.nombre.value, descripcion: form.descripcion.value, estatus: form.estatus.value };
-  const r = await Api.divisiones.crear(body);
+  const r = id ? await Api.divisiones.editar(id, body) : await Api.divisiones.crear(body);
   if (r.ok) { toast(r.data.mensaje); setTimeout(() => location.href = 'index.html', 700); }
   else manejarError(form, r);
 });
+if (id) precargar();
 </script>
 </body></html>

@@ -3,13 +3,16 @@ package com.of.oferta_educativa.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,6 +36,16 @@ public class DivisionController {
         return divisionRepository.findAllByOrderByNombreAsc();
     }
 
+    // HU02: datos actuales para el formulario
+    @GetMapping("/{id}")
+    public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
+        Optional<Division> division = divisionRepository.findById(id);
+        if (division.isEmpty()) {
+            return mensaje(HttpStatus.NOT_FOUND, "No existe la división con id " + id);
+        }
+        return ResponseEntity.ok(division.get());
+    }
+
     // HU01: registrar division
     @PostMapping
     public ResponseEntity<?> registrar(@Valid @RequestBody Division division, BindingResult validacion) {
@@ -54,6 +67,46 @@ public class DivisionController {
         respuesta.put("mensaje", "División registrada");
         respuesta.put("division", guardada);
         return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
+    }
+
+    // HU02: editar division
+    @PutMapping("/{id}")
+    public ResponseEntity<?> editar(@PathVariable Long id, @Valid @RequestBody Division datos,
+            BindingResult validacion) {
+        if (validacion.hasErrors()) {
+            return erroresDeValidacion(validacion);
+        }
+
+        Optional<Division> encontrada = divisionRepository.findById(id);
+        if (encontrada.isEmpty()) {
+            return mensaje(HttpStatus.NOT_FOUND, "No existe la división con id " + id);
+        }
+        Division division = encontrada.get();
+
+        if (tieneSolicitudPendiente(division)) {
+            return mensaje(HttpStatus.CONFLICT, "La división tiene una solicitud en revisión");
+        }
+        if (divisionRepository.existsByNombreIgnoreCaseAndIdNot(datos.getNombre().trim(), id)) {
+            return mensaje(HttpStatus.CONFLICT, "Ya existe otra división con ese nombre");
+        }
+
+        division.setNombre(datos.getNombre().trim());
+        division.setDescripcion(datos.getDescripcion());
+        division.setEstatus(datos.getEstatus());
+        division.setEstadoAprobacion(EstadoAprobacion.BORRADOR);
+        division.setMotivoRechazo(null);
+        Division guardada = divisionRepository.save(division);
+
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("mensaje", "División actualizada");
+        respuesta.put("division", guardada);
+        return ResponseEntity.ok(respuesta);
+    }
+
+    // Mientras el Secretario revisa, no se puede modificar
+    private boolean tieneSolicitudPendiente(Division division) {
+        return division.getEstadoAprobacion() == EstadoAprobacion.PENDIENTE
+                || division.getEstadoAprobacion() == EstadoAprobacion.PENDIENTE_DESACTIVACION;
     }
 
     private ResponseEntity<?> mensaje(HttpStatus estado, String texto) {
