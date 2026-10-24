@@ -1,4 +1,4 @@
-package com.of.oferta_educativa.entity;
+package com.oferta_academica.of_academica.entity;
 
 public enum Estatus {
     ACTIVO,
