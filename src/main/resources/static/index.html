@@ -34,12 +34,21 @@ async function cargarDivisiones() {
       <td>${badge(x.estadoAprobacion)}</td>
       <td class="actions">
         <a class="btn sm secondary" ${bloqueado ? 'disabled' : ''} href="division-form.html?id=${x.id}">Editar</a>
+        <button class="btn sm danger" ${puedeDesactivar ? 'disabled' : ''} data-tipo="DIVISION" data-id="${x.id}" data-nombre="${esc(x.nombre)}">Solicitar desactivación</button>
       </td>
     </tr>`;
   }).join('');
 }
 
 function cargar() { cargarDivisiones(); }
+
+document.querySelector('main').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-id]'); if (!b || b.disabled) return;
+  const api = Api.divisiones;
+  if (!(await confirmar(`¿Solicitar la desactivación de "${b.dataset.nombre}"?`))) return;
+  const r = await api.solicitarDesactivacion(b.dataset.id);
+  if (r.ok) { toast(r.data.mensaje); cargar(); } else toast(r.data?.mensaje || 'Error', 'err');
+});
 cargar();
 </script>
 </body></html>

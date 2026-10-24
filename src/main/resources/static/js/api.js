@@ -29,7 +29,8 @@ const Api = {
       listar: () => request('/divisiones'),
       obtener: id => request(`/divisiones/${id}`),
       crear: body => request('/divisiones', { method: 'POST', body }),
-      editar: (id, body) => request(`/divisiones/${id}`, { method: 'PUT', body })
+      editar: (id, body) => request(`/divisiones/${id}`, { method: 'PUT', body }),
+      solicitarDesactivacion: id => request(`/divisiones/${id}/solicitar-desactivacion`, { method: 'PATCH' })
   }
 };
 
@@ -48,6 +49,20 @@ function badge(valor) {
 
 function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function confirmar(texto) {
+  return new Promise(resolve => {
+    const bg = document.createElement('div');
+    bg.className = 'modal-bg';
+    bg.innerHTML = `<div class="modal"><p>${esc(texto)}</p><div class="form-actions">
+      <button class="btn secondary" data-r="0">Cancelar</button><button class="btn danger" data-r="1">Confirmar</button></div></div>`;
+    bg.addEventListener('click', e => {
+      const r = e.target.dataset && e.target.dataset.r;
+      if (r !== undefined) { bg.remove(); resolve(r === '1'); }
+    });
+    document.body.appendChild(bg);
+  });
 }
 
 // Muestra errores 400 junto a cada input (inputs con name="campo" y <div class="error" data-for="campo">)
