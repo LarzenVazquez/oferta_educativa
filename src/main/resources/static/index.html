@@ -36,6 +36,7 @@ async function cargarOferta() {
     const base = f.tipo === 'DIVISION' ? 'division' : 'carrera';
     const bloqueado = ['PENDIENTE', 'PENDIENTE_DESACTIVACION'].includes(f.estadoAprobacion);
     const puedeDesactivar = bloqueado || f.estadoAprobacion === 'INACTIVO';
+    const puedeEnviar = ['BORRADOR', 'RECHAZADO'].includes(f.estadoAprobacion);
     return `<tr>
       <td class="tipo">${f.tipo === 'DIVISION' ? 'División' : 'Carrera'}</td>
       <td>${f.tipo === 'CARRERA' ? '&nbsp;&nbsp;↳ ' : ''}${esc(f.nombre)}</td>
@@ -44,6 +45,7 @@ async function cargarOferta() {
       <td>${badge(f.estadoAprobacion)}</td>
       <td class="actions">
         <a class="btn sm secondary" ${bloqueado ? 'disabled' : ''} href="${base}-form.html?id=${f.id}">Editar</a>
+        <button class="btn sm" ${puedeEnviar ? '' : 'disabled'} data-accion="enviar" data-tipo="${f.tipo}" data-id="${f.id}" data-nombre="${esc(f.nombre)}">Enviar a aprobación</button>
         <button class="btn sm danger" ${puedeDesactivar ? 'disabled' : ''} data-tipo="${f.tipo}" data-id="${f.id}" data-nombre="${esc(f.nombre)}">Solicitar desactivación</button>
       </td></tr>`;
   }).join('');
@@ -52,8 +54,10 @@ async function cargarOferta() {
 $tbody.addEventListener('click', async e => {
   const b = e.target.closest('button[data-id]'); if (!b || b.disabled) return;
   const api = b.dataset.tipo === 'DIVISION' ? Api.divisiones : Api.carreras;
-  if (!(await confirmar(`¿Solicitar la desactivación de "${b.dataset.nombre}"?`))) return;
-  const r = await api.solicitarDesactivacion(b.dataset.id);
+  const enviar = b.dataset.accion === 'enviar';
+  const pregunta = enviar ? `¿Enviar a aprobación "${b.dataset.nombre}"?` : `¿Solicitar la desactivación de "${b.dataset.nombre}"?`;
+  if (!(await confirmar(pregunta))) return;
+  const r = enviar ? await api.enviarAprobacion(b.dataset.id) : await api.solicitarDesactivacion(b.dataset.id);
   if (r.ok) { toast(r.data.mensaje); cargarOferta(); } else toast(r.data?.mensaje || 'Error', 'err');
 });
 
