@@ -31,6 +31,12 @@ const Api = {
       crear: body => request('/divisiones', { method: 'POST', body }),
       editar: (id, body) => request(`/divisiones/${id}`, { method: 'PUT', body }),
       solicitarDesactivacion: id => request(`/divisiones/${id}/solicitar-desactivacion`, { method: 'PATCH' })
+  },
+  carreras: {
+      listar: () => request('/carreras'),
+      obtener: id => request(`/carreras/${id}`),
+      crear: body => request('/carreras', { method: 'POST', body }),
+      editar: (id, body) => request(`/carreras/${id}`, { method: 'PUT', body })
   }
 };
 
