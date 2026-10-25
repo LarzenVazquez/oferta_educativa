@@ -1,4 +1,4 @@
-package com.of.oferta_educativa.controller;
+package com.oferta_academica.of_academica.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.of.oferta_educativa.entity.*;
-import com.of.oferta_educativa.entity.EstadoAprobacion;
-import com.of.oferta_educativa.repository.DivisionRepository;
+import com.oferta_academica.of_academica.entity.*;
+import com.oferta_academica.of_academica.entity.EstadoAprobacion;
+import com.oferta_academica.of_academica.repository.DivisionRepository;
 
 import jakarta.validation.Valid;
 
