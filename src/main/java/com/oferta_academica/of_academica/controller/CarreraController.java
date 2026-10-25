@@ -231,6 +231,25 @@ public class CarreraController {
         return ResponseEntity.ok(respuesta);
     }
 
+@PatchMapping("/{id}/despublicar")
+    public ResponseEntity<?> despublicar(@PathVariable Long id) {
+        Optional<Carrera> encontrada = carreraRepository.findById(id);
+        if (encontrada.isEmpty()) {
+            return mensaje(HttpStatus.NOT_FOUND, "No existe la carrera con id " + id);
+        }
+        
+        Carrera carrera = encontrada.get();
+        
+        carrera.setEstadoAprobacion(EstadoAprobacion.BORRADOR);
+        carrera.setPublicado(false);
+        Carrera guardada = carreraRepository.save(carrera);
+
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("mensaje", "Carrera despublicada correctamente");
+        respuesta.put("carrera", guardada);
+        return ResponseEntity.ok(respuesta);
+    }
+
     // Mientras el Secretario revisa, no se puede modificar
     private boolean tieneSolicitudPendiente(Carrera carrera) {
         return carrera.getEstadoAprobacion() == EstadoAprobacion.PENDIENTE
