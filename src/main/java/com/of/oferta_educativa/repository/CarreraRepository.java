@@ -1,10 +1,9 @@
-package com.oferta_academica.of_academica.repository;
-
+package com.of.oferta_educativa.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.oferta_academica.of_academica.entity.Carrera;
+import com.of.oferta_educativa.entity.Carrera;
 
 public interface CarreraRepository extends JpaRepository<Carrera, Long> {
 

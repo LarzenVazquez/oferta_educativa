@@ -1,4 +1,4 @@
-package com.oferta_academica.of_academica.entity;
+package com.of.oferta_educativa.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +18,7 @@ import lombok.Data;
 // Carrera: programa de estudios. Siempre pertenece a una division
 @Entity
 @Table(name = "carreras")
-@Data
+@Data 
 public class Carrera {
 
     @Id
