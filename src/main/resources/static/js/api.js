@@ -27,18 +27,20 @@ async function request(path, options = {}) {
 
 const Api = {
   divisiones: {
-      listar: () => request('/divisiones'),
-      obtener: id => request(`/divisiones/${id}`),
-      crear: body => request('/divisiones', { method: 'POST', body }),
-      editar: (id, body) => request(`/divisiones/${id}`, { method: 'PUT', body }),
-      solicitarDesactivacion: id => request(`/divisiones/${id}/solicitar-desactivacion`, { method: 'PATCH' })
+    listar: () => request('/divisiones'),
+    obtener: id => request(`/divisiones/${id}`),
+    crear: body => request('/divisiones', { method: 'POST', body }),
+    editar: (id, body) => request(`/divisiones/${id}`, { method: 'PUT', body }),
+    enviarAprobacion: id => request(`/divisiones/${id}/enviar-aprobacion`, { method: 'PATCH' }),
+    solicitarDesactivacion: id => request(`/divisiones/${id}/solicitar-desactivacion`, { method: 'PATCH' })
   },
   carreras: {
-      listar: () => request('/carreras'),
-      obtener: id => request(`/carreras/${id}`),
-      crear: body => request('/carreras', { method: 'POST', body }),
-      editar: (id, body) => request(`/carreras/${id}`, { method: 'PUT', body }),
-      solicitarDesactivacion: id => request(`/carreras/${id}/solicitar-desactivacion`, { method: 'PATCH' })
+    listar: () => request('/carreras'),
+    obtener: id => request(`/carreras/${id}`),
+    crear: body => request('/carreras', { method: 'POST', body }),
+    editar: (id, body) => request(`/carreras/${id}`, { method: 'PUT', body }),
+    enviarAprobacion: id => request(`/carreras/${id}/enviar-aprobacion`, { method: 'PATCH' }),
+    solicitarDesactivacion: id => request(`/carreras/${id}/solicitar-desactivacion`, { method: 'PATCH' })
   },
   oferta: {
     listar: (nombre, divisionId) => {

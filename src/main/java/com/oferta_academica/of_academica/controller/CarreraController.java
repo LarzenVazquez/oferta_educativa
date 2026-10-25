@@ -163,6 +163,36 @@ public class CarreraController {
         return ResponseEntity.ok(respuesta);
     }
 
+    // HU08: enviar a aprobacion (registro nuevo o modificado)
+    @PatchMapping("/{id}/enviar-aprobacion")
+    public ResponseEntity<?> enviarAAprobacion(@PathVariable Long id) {
+        Optional<Carrera> encontrada = carreraRepository.findById(id);
+        if (encontrada.isEmpty()) {
+            return mensaje(HttpStatus.NOT_FOUND, "No existe la carrera con id " + id);
+        }
+        Carrera carrera = encontrada.get();
+
+        EstadoAprobacion estado = carrera.getEstadoAprobacion();
+        if (tieneSolicitudPendiente(carrera)) {
+            return mensaje(HttpStatus.CONFLICT, "La carrera ya tiene una solicitud en revisión");
+        }
+        if (estado == EstadoAprobacion.APROBADO) {
+            return mensaje(HttpStatus.CONFLICT, "La carrera ya está aprobada");
+        }
+        if (estado == EstadoAprobacion.INACTIVO) {
+            return mensaje(HttpStatus.CONFLICT, "La carrera está inactiva y no se puede enviar a aprobación");
+        }
+
+        carrera.setEstadoAprobacion(EstadoAprobacion.PENDIENTE);
+        carrera.setMotivoRechazo(null);
+        Carrera guardada = carreraRepository.save(carrera);
+
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("mensaje", "Enviada a aprobación");
+        respuesta.put("carrera", guardada);
+        return ResponseEntity.ok(respuesta);
+    }
+
     // Mientras el Secretario revisa, no se puede modificar
     private boolean tieneSolicitudPendiente(Carrera carrera) {
         return carrera.getEstadoAprobacion() == EstadoAprobacion.PENDIENTE
