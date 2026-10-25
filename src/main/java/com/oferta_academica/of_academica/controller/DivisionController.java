@@ -129,6 +129,42 @@ public class DivisionController {
         return ResponseEntity.ok(respuesta);
     }
 
+    // HU12 (Secretario Académico): rechazar solicitud con motivo obligatorio
+    @PatchMapping("/{id}/rechazar")
+    public ResponseEntity<?> rechazar(@PathVariable Long id, @RequestBody(required = false) Map<String, String> datos) {
+        String motivo = (datos == null || datos.get("motivo") == null) ? "" : datos.get("motivo").trim();
+        if (motivo.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("motivo", "El motivo de rechazo es obligatorio"));
+        }
+        if (motivo.length() > 500) {
+            return ResponseEntity.badRequest().body(Map.of("motivo", "El motivo no puede exceder 500 caracteres"));
+        }
+
+        Optional<Division> encontrada = divisionRepository.findById(id);
+        if (encontrada.isEmpty()) {
+            return mensaje(HttpStatus.NOT_FOUND, "No existe la división con id " + id);
+        }
+        Division division = encontrada.get();
+
+        if (!tieneSolicitudPendiente(division)) {
+            return mensaje(HttpStatus.CONFLICT, "La división no tiene una solicitud pendiente");
+        }
+
+        // Publicación rechazada: no aparece en la web.
+        // Desactivación rechazada: se conserva "publicado" tal cual (sigue visible).
+        if (division.getEstadoAprobacion() == EstadoAprobacion.PENDIENTE) {
+            division.setPublicado(false);
+        }
+        division.setEstadoAprobacion(EstadoAprobacion.RECHAZADO);
+        division.setMotivoRechazo(motivo);
+        Division guardada = divisionRepository.save(division);
+
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("mensaje", "Solicitud rechazada");
+        respuesta.put("division", guardada);
+        return ResponseEntity.ok(respuesta);
+    }
+
     // Mientras el Secretario revisa, no se puede modificar
     private boolean tieneSolicitudPendiente(Division division) {
         return division.getEstadoAprobacion() == EstadoAprobacion.PENDIENTE

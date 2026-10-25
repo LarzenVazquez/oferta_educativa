@@ -31,14 +31,16 @@ const Api = {
       obtener: id => request(`/divisiones/${id}`),
       crear: body => request('/divisiones', { method: 'POST', body }),
       editar: (id, body) => request(`/divisiones/${id}`, { method: 'PUT', body }),
-      solicitarDesactivacion: id => request(`/divisiones/${id}/solicitar-desactivacion`, { method: 'PATCH' })
+      solicitarDesactivacion: id => request(`/divisiones/${id}/solicitar-desactivacion`, { method: 'PATCH' }),
+      rechazar: (id, motivo) => request(`/divisiones/${id}/rechazar`, { method: 'PATCH', body: { motivo } })
   },
   carreras: {
       listar: () => request('/carreras'),
       obtener: id => request(`/carreras/${id}`),
       crear: body => request('/carreras', { method: 'POST', body }),
       editar: (id, body) => request(`/carreras/${id}`, { method: 'PUT', body }),
-      solicitarDesactivacion: id => request(`/carreras/${id}/solicitar-desactivacion`, { method: 'PATCH' })
+      solicitarDesactivacion: id => request(`/carreras/${id}/solicitar-desactivacion`, { method: 'PATCH' }),
+      rechazar: (id, motivo) => request(`/carreras/${id}/rechazar`, { method: 'PATCH', body: { motivo } })
   },
   oferta: {
     listar: (nombre, divisionId) => {
@@ -78,6 +80,41 @@ function confirmar(texto) {
       if (r !== undefined) { bg.remove(); resolve(r === '1'); }
     });
     document.body.appendChild(bg);
+  });
+}
+
+// HU12: pide el motivo (obligatorio) y rechaza la solicitud. tipo = 'DIVISION' | 'CARRERA'
+// Devuelve true si se rechazó, false si se canceló o hubo error.
+function rechazarSolicitud(tipo, id, nombre) {
+  return new Promise(resolve => {
+    const bg = document.createElement('div');
+    bg.className = 'modal-bg';
+    bg.innerHTML = `<form class="modal" novalidate>
+      <p>Rechazar la solicitud de <b>${esc(nombre)}</b></p>
+      <div class="field"><label for="motivo">Motivo del rechazo</label>
+        <textarea id="motivo" name="motivo" maxlength="500"></textarea>
+        <div class="error" data-for="motivo"></div></div>
+      <div class="form-actions">
+        <button type="button" class="btn secondary" data-cancelar>Cancelar</button>
+        <button type="submit" class="btn danger">Rechazar</button></div></form>`;
+    const form = bg.querySelector('form');
+    const cerrar = ok => { bg.remove(); resolve(ok); };
+
+    form.querySelector('[data-cancelar]').addEventListener('click', () => cerrar(false));
+    form.addEventListener('submit', async e => {
+      e.preventDefault(); limpiarErrores(form);
+      const motivo = form.motivo.value.trim();
+      if (!motivo) return pintarErrores(form, { motivo: 'El motivo de rechazo es obligatorio' });
+
+      const api = tipo === 'DIVISION' ? Api.divisiones : Api.carreras;
+      const r = await api.rechazar(id, motivo);
+      if (r.ok) { toast(r.data.mensaje); cerrar(true); }
+      else if (r.status === 400 && r.data) pintarErrores(form, r.data);
+      else { toast(r.data?.mensaje || 'Ocurrió un error', 'err'); cerrar(false); }
+    });
+
+    document.body.appendChild(bg);
+    form.motivo.focus();
   });
 }
 
