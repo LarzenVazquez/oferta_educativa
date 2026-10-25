@@ -25,6 +25,26 @@ const $nombre = document.getElementById('fNombre'), $div = document.getElementBy
 
 async function cargarDivisiones() {
   const r = await Api.divisiones.listar();
+<<<<<<< HEAD
+  if (!r.ok) { $t.innerHTML = `<tr><td colspan="5" class="empty">No se pudieron cargar las divisiones</td></tr>`; return toast(r.data?.mensaje || 'Error', 'err'); }
+  if (!r.data.length) { $t.innerHTML = `<tr><td colspan="5" class="empty">Sin divisiones registradas</td></tr>`; return; }
+  
+  $t.innerHTML = r.data.map(x => {
+    const bloqueado = ['PENDIENTE', 'PENDIENTE_DESACTIVACION'].includes(x.estadoAprobacion);
+    const puedeDesactivar = bloqueado || x.estadoAprobacion === 'INACTIVO';
+    
+    // HU09: Estado del registro
+    let estadoHtml = badge(x.estadoAprobacion);
+    if (x.estadoAprobacion === 'RECHAZADO' && x.motivoRechazo) {
+      estadoHtml += `<div style="font-size: 0.8rem; color: #dc3545; margin-top: 4px;">Motivo: ${esc(x.motivoRechazo)}</div>`;
+    }
+
+    return `<tr>
+      <td>${esc(x.nombre)}</td>
+      <td>${esc(x.descripcion)}</td>
+      <td>${badge(x.estatus)}</td>
+      <td>${estadoHtml}</td>
+=======
   if (r.ok) r.data.forEach(d => $div.insertAdjacentHTML('beforeend', `<option value="${d.id}">${esc(d.nombre)}</option>`));
 }
 
@@ -36,14 +56,17 @@ async function cargarOferta() {
     const base = f.tipo === 'DIVISION' ? 'division' : 'carrera';
     const bloqueado = ['PENDIENTE', 'PENDIENTE_DESACTIVACION'].includes(f.estadoAprobacion);
     const puedeDesactivar = bloqueado || f.estadoAprobacion === 'INACTIVO';
+    const puedeEnviar = ['BORRADOR', 'RECHAZADO'].includes(f.estadoAprobacion);
     return `<tr>
       <td class="tipo">${f.tipo === 'DIVISION' ? 'División' : 'Carrera'}</td>
       <td>${f.tipo === 'CARRERA' ? '&nbsp;&nbsp;↳ ' : ''}${esc(f.nombre)}</td>
       <td>${esc(f.division)}</td>
       <td>${badge(f.estatus)}</td>
       <td>${badge(f.estadoAprobacion)}</td>
+>>>>>>> upstream/main
       <td class="actions">
         <a class="btn sm secondary" ${bloqueado ? 'disabled' : ''} href="${base}-form.html?id=${f.id}">Editar</a>
+        <button class="btn sm" ${puedeEnviar ? '' : 'disabled'} data-accion="enviar" data-tipo="${f.tipo}" data-id="${f.id}" data-nombre="${esc(f.nombre)}">Enviar a aprobación</button>
         <button class="btn sm danger" ${puedeDesactivar ? 'disabled' : ''} data-tipo="${f.tipo}" data-id="${f.id}" data-nombre="${esc(f.nombre)}">Solicitar desactivación</button>
       </td></tr>`;
   }).join('');
@@ -52,8 +75,10 @@ async function cargarOferta() {
 $tbody.addEventListener('click', async e => {
   const b = e.target.closest('button[data-id]'); if (!b || b.disabled) return;
   const api = b.dataset.tipo === 'DIVISION' ? Api.divisiones : Api.carreras;
-  if (!(await confirmar(`¿Solicitar la desactivación de "${b.dataset.nombre}"?`))) return;
-  const r = await api.solicitarDesactivacion(b.dataset.id);
+  const enviar = b.dataset.accion === 'enviar';
+  const pregunta = enviar ? `¿Enviar a aprobación "${b.dataset.nombre}"?` : `¿Solicitar la desactivación de "${b.dataset.nombre}"?`;
+  if (!(await confirmar(pregunta))) return;
+  const r = enviar ? await api.enviarAprobacion(b.dataset.id) : await api.solicitarDesactivacion(b.dataset.id);
   if (r.ok) { toast(r.data.mensaje); cargarOferta(); } else toast(r.data?.mensaje || 'Error', 'err');
 });
 

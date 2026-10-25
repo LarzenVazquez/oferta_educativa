@@ -1,6 +1,3 @@
-// ===== Cliente de la API + utilidades compartidas =====
-// Si sirves los HTML desde Spring (http://localhost:8080) puedes usar '/api/admin'.
-// Si los abres con otro servidor (Live Server, etc.) deja la URL completa (CORS ya está habilitado).
 const API_URL = 'http://localhost:8080/api/admin';
 
 const ESTADO_LABEL = {
@@ -27,20 +24,28 @@ async function request(path, options = {}) {
 
 const Api = {
   divisiones: {
-      listar: () => request('/divisiones'),
-      obtener: id => request(`/divisiones/${id}`),
-      crear: body => request('/divisiones', { method: 'POST', body }),
-      editar: (id, body) => request(`/divisiones/${id}`, { method: 'PUT', body }),
-      solicitarDesactivacion: id => request(`/divisiones/${id}/solicitar-desactivacion`, { method: 'PATCH' }),
-      rechazar: (id, motivo) => request(`/divisiones/${id}/rechazar`, { method: 'PATCH', body: { motivo } })
+    listar: () => request('/divisiones'),
+    obtener: id => request(`/divisiones/${id}`),
+    crear: body => request('/divisiones', { method: 'POST', body }),
+    editar: (id, body) => request(`/divisiones/${id}`, { method: 'PUT', body }),
+    enviarAprobacion: id => request(`/divisiones/${id}/enviar-aprobacion`, { method: 'PATCH' }),
+    solicitarDesactivacion: id => request(`/divisiones/${id}/solicitar-desactivacion`, { method: 'PATCH' }),
+    rechazar: (id, motivo) => request(`/divisiones/${id}/rechazar`, { method: 'PATCH', body: { motivo } })
   },
   carreras: {
-      listar: () => request('/carreras'),
-      obtener: id => request(`/carreras/${id}`),
-      crear: body => request('/carreras', { method: 'POST', body }),
-      editar: (id, body) => request(`/carreras/${id}`, { method: 'PUT', body }),
-      solicitarDesactivacion: id => request(`/carreras/${id}/solicitar-desactivacion`, { method: 'PATCH' }),
-      rechazar: (id, motivo) => request(`/carreras/${id}/rechazar`, { method: 'PATCH', body: { motivo } })
+    listar: () => request('/carreras'),
+    obtener: id => request(`/carreras/${id}`),
+    crear: body => request('/carreras', { method: 'POST', body }),
+    editar: (id, body) => request(`/carreras/${id}`, { method: 'PUT', body }),
+    enviarAprobacion: id => request(`/carreras/${id}/enviar-aprobacion`, { method: 'PATCH' }),
+    solicitarDesactivacion: id => request(`/carreras/${id}/solicitar-desactivacion`, { method: 'PATCH' }),
+    rechazar: (id, motivo) => request(`/carreras/${id}/rechazar`, { method: 'PATCH', body: { motivo } })
+  },
+  // Rol Secretario: bandeja de solicitudes, aprobar y rechazar. tipo = 'DIVISION' | 'CARRERA'
+  secretario: {
+    listarSolicitudes: () => request('/secretario/solicitudes'),
+    aprobar: (tipo, id) => request(`/secretario/${rutaTipo(tipo)}/${id}/aprobar`, { method: 'PATCH' }),
+    rechazar: (tipo, id, motivoRechazo) => request(`/secretario/${rutaTipo(tipo)}/${id}/rechazar`, { method: 'PATCH', body: { motivoRechazo } })
   },
   oferta: {
     listar: (nombre, divisionId) => {
@@ -52,7 +57,10 @@ const Api = {
   }
 };
 
-// ---------- UI helpers ----------
+function rutaTipo(tipo) {
+  return String(tipo).toUpperCase() === 'DIVISION' ? 'divisiones' : 'carreras';
+}
+
 function toast(texto, tipo = 'ok') {
   let box = document.getElementById('toast');
   if (!box) { box = document.createElement('div'); box.id = 'toast'; document.body.appendChild(box); }
@@ -149,5 +157,6 @@ function renderHeader(activo) {
       <a href="index.html">Oferta</a>
       <a href="division-form.html">+ División</a>
       <a href="carrera-form.html">+ Carrera</a>
+      <a href="panel-secretario.html">Panel Secretario</a>
     </nav></header>`);
 }

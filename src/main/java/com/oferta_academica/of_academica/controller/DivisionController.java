@@ -1,5 +1,4 @@
 package com.oferta_academica.of_academica.controller;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.oferta_academica.of_academica.entity.Division;
+import com.oferta_academica.of_academica.entity.*;
 import com.oferta_academica.of_academica.entity.EstadoAprobacion;
 import com.oferta_academica.of_academica.repository.DivisionRepository;
 
@@ -129,6 +128,36 @@ public class DivisionController {
         return ResponseEntity.ok(respuesta);
     }
 
+    // HU08: enviar a aprobacion (registro nuevo o modificado)
+    @PatchMapping("/{id}/enviar-aprobacion")
+    public ResponseEntity<?> enviarAAprobacion(@PathVariable Long id) {
+        Optional<Division> encontrada = divisionRepository.findById(id);
+        if (encontrada.isEmpty()) {
+            return mensaje(HttpStatus.NOT_FOUND, "No existe la división con id " + id);
+        }
+        Division division = encontrada.get();
+
+        EstadoAprobacion estado = division.getEstadoAprobacion();
+        if (tieneSolicitudPendiente(division)) {
+            return mensaje(HttpStatus.CONFLICT, "La división ya tiene una solicitud en revisión");
+        }
+        if (estado == EstadoAprobacion.APROBADO) {
+            return mensaje(HttpStatus.CONFLICT, "La división ya está aprobada");
+        }
+        if (estado == EstadoAprobacion.INACTIVO) {
+            return mensaje(HttpStatus.CONFLICT, "La división está inactiva y no se puede enviar a aprobación");
+        }
+
+        division.setEstadoAprobacion(EstadoAprobacion.PENDIENTE);
+        division.setMotivoRechazo(null);
+        Division guardada = divisionRepository.save(division);
+
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("mensaje", "Enviada a aprobación");
+        respuesta.put("division", guardada);
+        return ResponseEntity.ok(respuesta);
+    }
+
     // HU12 (Secretario Académico): rechazar solicitud con motivo obligatorio
     @PatchMapping("/{id}/rechazar")
     public ResponseEntity<?> rechazar(@PathVariable Long id, @RequestBody(required = false) Map<String, String> datos) {
@@ -151,11 +180,13 @@ public class DivisionController {
         }
 
         // Publicación rechazada: no aparece en la web.
-        // Desactivación rechazada: se conserva "publicado" tal cual (sigue visible).
-        if (division.getEstadoAprobacion() == EstadoAprobacion.PENDIENTE) {
+        // Desactivación rechazada: si ya estaba publicada vuelve a APROBADO y sigue visible.
+        if (division.getEstadoAprobacion() == EstadoAprobacion.PENDIENTE_DESACTIVACION && division.isPublicado()) {
+            division.setEstadoAprobacion(EstadoAprobacion.APROBADO);
+        } else {
+            division.setEstadoAprobacion(EstadoAprobacion.RECHAZADO);
             division.setPublicado(false);
         }
-        division.setEstadoAprobacion(EstadoAprobacion.RECHAZADO);
         division.setMotivoRechazo(motivo);
         Division guardada = divisionRepository.save(division);
 

@@ -163,6 +163,36 @@ public class CarreraController {
         return ResponseEntity.ok(respuesta);
     }
 
+    // HU08: enviar a aprobacion (registro nuevo o modificado)
+    @PatchMapping("/{id}/enviar-aprobacion")
+    public ResponseEntity<?> enviarAAprobacion(@PathVariable Long id) {
+        Optional<Carrera> encontrada = carreraRepository.findById(id);
+        if (encontrada.isEmpty()) {
+            return mensaje(HttpStatus.NOT_FOUND, "No existe la carrera con id " + id);
+        }
+        Carrera carrera = encontrada.get();
+
+        EstadoAprobacion estado = carrera.getEstadoAprobacion();
+        if (tieneSolicitudPendiente(carrera)) {
+            return mensaje(HttpStatus.CONFLICT, "La carrera ya tiene una solicitud en revisión");
+        }
+        if (estado == EstadoAprobacion.APROBADO) {
+            return mensaje(HttpStatus.CONFLICT, "La carrera ya está aprobada");
+        }
+        if (estado == EstadoAprobacion.INACTIVO) {
+            return mensaje(HttpStatus.CONFLICT, "La carrera está inactiva y no se puede enviar a aprobación");
+        }
+
+        carrera.setEstadoAprobacion(EstadoAprobacion.PENDIENTE);
+        carrera.setMotivoRechazo(null);
+        Carrera guardada = carreraRepository.save(carrera);
+
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("mensaje", "Enviada a aprobación");
+        respuesta.put("carrera", guardada);
+        return ResponseEntity.ok(respuesta);
+    }
+
     // HU12 (Secretario Académico): rechazar solicitud con motivo obligatorio
     @PatchMapping("/{id}/rechazar")
     public ResponseEntity<?> rechazar(@PathVariable Long id, @RequestBody(required = false) Map<String, String> datos) {
@@ -185,11 +215,13 @@ public class CarreraController {
         }
 
         // Publicación rechazada: no aparece en la web.
-        // Desactivación rechazada: se conserva "publicado" tal cual (sigue visible).
-        if (carrera.getEstadoAprobacion() == EstadoAprobacion.PENDIENTE) {
+        // Desactivación rechazada: si ya estaba publicada vuelve a APROBADO y sigue visible.
+        if (carrera.getEstadoAprobacion() == EstadoAprobacion.PENDIENTE_DESACTIVACION && carrera.isPublicado()) {
+            carrera.setEstadoAprobacion(EstadoAprobacion.APROBADO);
+        } else {
+            carrera.setEstadoAprobacion(EstadoAprobacion.RECHAZADO);
             carrera.setPublicado(false);
         }
-        carrera.setEstadoAprobacion(EstadoAprobacion.RECHAZADO);
         carrera.setMotivoRechazo(motivo);
         Carrera guardada = carreraRepository.save(carrera);
 
