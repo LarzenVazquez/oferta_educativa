@@ -37,6 +37,11 @@ const Api = {
       obtener: id => request(`/carreras/${id}`),
       crear: body => request('/carreras', { method: 'POST', body }),
       editar: (id, body) => request(`/carreras/${id}`, { method: 'PUT', body })
+  },
+  secretario: {
+      listarSolicitudes: () => request('/secretario/solicitudes'),
+      aprobar: (tipo, id) => request(`/secretario/${tipo.toLowerCase() === 'division' ? 'divisiones' : 'carreras'}/${id}/aprobar`, { method: 'PATCH' }),
+      rechazar: (tipo, id, motivoRechazo) => request(`/secretario/${tipo.toLowerCase() === 'division' ? 'divisiones' : 'carreras'}/${id}/rechazar`, { method: 'PATCH', body: { motivoRechazo } })
   }
 };
 
@@ -101,5 +106,6 @@ function renderHeader(activo) {
     <header class="top"><h1>Oferta Académica</h1><nav>
       <a href="index.html">Oferta</a>
       <a href="division-form.html">+ División</a>
+      <a href="panel-secretario.html">Panel Secretario</a>
     </nav></header>`);
 }
