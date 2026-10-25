@@ -1,10 +1,10 @@
-package com.of.oferta_educativa;
+package com.oferta_academica.of_academica;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class OfertaEducativaApplicationTests {
+class OfAcademicaApplicationTests {
 
 	@Test
 	void contextLoads() {
