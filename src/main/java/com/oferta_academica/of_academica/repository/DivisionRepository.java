@@ -1,11 +1,11 @@
-package com.of.oferta_educativa.repository;
+package com.oferta_academica.of_academica.repository;
 
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.of.oferta_educativa.entity.Division;
-import com.of.oferta_educativa.entity.EstadoAprobacion;
+import com.oferta_academica.of_academica.entity.Division;
+import com.oferta_academica.of_academica.entity.EstadoAprobacion;
 
 public interface DivisionRepository extends JpaRepository<Division, Long> {
 
