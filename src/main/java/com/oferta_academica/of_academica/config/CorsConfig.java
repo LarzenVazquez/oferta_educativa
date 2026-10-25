@@ -1,4 +1,4 @@
-package com.oferta_academica.of_academica.config;
+package com.of.oferta_educativa.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

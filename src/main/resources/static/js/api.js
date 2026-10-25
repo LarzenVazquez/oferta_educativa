@@ -27,6 +27,24 @@ async function request(path, options = {}) {
 
 const Api = {
   divisiones: {
+<<<<<<< HEAD
+      listar: () => request('/divisiones'),
+      obtener: id => request(`/divisiones/${id}`),
+      crear: body => request('/divisiones', { method: 'POST', body }),
+      editar: (id, body) => request(`/divisiones/${id}`, { method: 'PUT', body }),
+      solicitarDesactivacion: id => request(`/divisiones/${id}/solicitar-desactivacion`, { method: 'PATCH' })
+  },
+  carreras: {
+      listar: () => request('/carreras'),
+      obtener: id => request(`/carreras/${id}`),
+      crear: body => request('/carreras', { method: 'POST', body }),
+      editar: (id, body) => request(`/carreras/${id}`, { method: 'PUT', body })
+  },
+  secretario: {
+      listarSolicitudes: () => request('/secretario/solicitudes'),
+      aprobar: (tipo, id) => request(`/secretario/${tipo.toLowerCase() === 'division' ? 'divisiones' : 'carreras'}/${id}/aprobar`, { method: 'PATCH' }),
+      rechazar: (tipo, id, motivoRechazo) => request(`/secretario/${tipo.toLowerCase() === 'division' ? 'divisiones' : 'carreras'}/${id}/rechazar`, { method: 'PATCH', body: { motivoRechazo } })
+=======
     listar: () => request('/divisiones'),
     obtener: id => request(`/divisiones/${id}`),
     crear: body => request('/divisiones', { method: 'POST', body }),
@@ -49,6 +67,7 @@ const Api = {
       if (divisionId) p.set('divisionId', divisionId);
       return request('/oferta' + (p.toString() ? '?' + p : ''));
     }
+>>>>>>> upstream/main
   }
 };
 
@@ -113,6 +132,10 @@ function renderHeader(activo) {
     <header class="top"><h1>Oferta Académica</h1><nav>
       <a href="index.html">Oferta</a>
       <a href="division-form.html">+ División</a>
+<<<<<<< HEAD
+      <a href="panel-secretario.html">Panel Secretario</a>
+=======
       <a href="carrera-form.html">+ Carrera</a>
+>>>>>>> upstream/main
     </nav></header>`);
 }
