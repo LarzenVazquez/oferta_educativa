@@ -4,24 +4,28 @@
 <body>
 <main>
   <div class="card">
-    <h2>Divisiones</h2>
+    <h2>Oferta académica (HU07)</h2>
     <div class="toolbar">
+      <input id="fNombre" type="search" placeholder="Buscar por nombre…">
+      <select id="fDivision"><option value="">Todas las divisiones</option></select>
       <span class="spacer"></span>
       <a class="btn" href="division-form.html">+ División</a>
+      <a class="btn" href="carrera-form.html">+ Carrera</a>
     </div>
     <table>
-      <thead><tr><th>Nombre</th><th>Descripción</th><th>Estatus</th><th>Aprobación</th><th></th></tr></thead>
-      <tbody id="tDivisiones"><tr><td colspan="5" class="empty">Cargando…</td></tr></tbody>
+      <thead><tr><th>Tipo</th><th>Nombre</th><th>División</th><th>Estatus</th><th>Aprobación</th><th></th></tr></thead>
+      <tbody id="tbody"><tr><td colspan="6" class="empty">Cargando…</td></tr></tbody>
     </table>
   </div>
 </main>
 <script src="js/api.js"></script>
 <script>
 renderHeader();
+const $nombre = document.getElementById('fNombre'), $div = document.getElementById('fDivision'), $tbody = document.getElementById('tbody');
 
 async function cargarDivisiones() {
-  const $t = document.getElementById('tDivisiones');
   const r = await Api.divisiones.listar();
+<<<<<<< HEAD
   if (!r.ok) { $t.innerHTML = `<tr><td colspan="5" class="empty">No se pudieron cargar las divisiones</td></tr>`; return toast(r.data?.mensaje || 'Error', 'err'); }
   if (!r.data.length) { $t.innerHTML = `<tr><td colspan="5" class="empty">Sin divisiones registradas</td></tr>`; return; }
   
@@ -40,23 +44,46 @@ async function cargarDivisiones() {
       <td>${esc(x.descripcion)}</td>
       <td>${badge(x.estatus)}</td>
       <td>${estadoHtml}</td>
+=======
+  if (r.ok) r.data.forEach(d => $div.insertAdjacentHTML('beforeend', `<option value="${d.id}">${esc(d.nombre)}</option>`));
+}
+
+async function cargarOferta() {
+  const r = await Api.oferta.listar($nombre.value.trim(), $div.value);
+  if (!r.ok) { $tbody.innerHTML = `<tr><td colspan="6" class="empty">No se pudo cargar la oferta</td></tr>`; return toast(r.data?.mensaje || 'Error', 'err'); }
+  if (!r.data.length) { $tbody.innerHTML = `<tr><td colspan="6" class="empty">Sin resultados</td></tr>`; return; }
+  $tbody.innerHTML = r.data.map(f => {
+    const base = f.tipo === 'DIVISION' ? 'division' : 'carrera';
+    const bloqueado = ['PENDIENTE', 'PENDIENTE_DESACTIVACION'].includes(f.estadoAprobacion);
+    const puedeDesactivar = bloqueado || f.estadoAprobacion === 'INACTIVO';
+    const puedeEnviar = ['BORRADOR', 'RECHAZADO'].includes(f.estadoAprobacion);
+    return `<tr>
+      <td class="tipo">${f.tipo === 'DIVISION' ? 'División' : 'Carrera'}</td>
+      <td>${f.tipo === 'CARRERA' ? '&nbsp;&nbsp;↳ ' : ''}${esc(f.nombre)}</td>
+      <td>${esc(f.division)}</td>
+      <td>${badge(f.estatus)}</td>
+      <td>${badge(f.estadoAprobacion)}</td>
+>>>>>>> upstream/main
       <td class="actions">
-        <a class="btn sm secondary" ${bloqueado ? 'disabled' : ''} href="division-form.html?id=${x.id}">Editar</a>
-        <button class="btn sm danger" ${puedeDesactivar ? 'disabled' : ''} data-tipo="DIVISION" data-id="${x.id}" data-nombre="${esc(x.nombre)}">Solicitar desactivación</button>
-      </td>
-    </tr>`;
+        <a class="btn sm secondary" ${bloqueado ? 'disabled' : ''} href="${base}-form.html?id=${f.id}">Editar</a>
+        <button class="btn sm" ${puedeEnviar ? '' : 'disabled'} data-accion="enviar" data-tipo="${f.tipo}" data-id="${f.id}" data-nombre="${esc(f.nombre)}">Enviar a aprobación</button>
+        <button class="btn sm danger" ${puedeDesactivar ? 'disabled' : ''} data-tipo="${f.tipo}" data-id="${f.id}" data-nombre="${esc(f.nombre)}">Solicitar desactivación</button>
+      </td></tr>`;
   }).join('');
 }
 
-function cargar() { cargarDivisiones(); }
-
-document.querySelector('main').addEventListener('click', async e => {
+$tbody.addEventListener('click', async e => {
   const b = e.target.closest('button[data-id]'); if (!b || b.disabled) return;
-  const api = Api.divisiones;
-  if (!(await confirmar(`¿Solicitar la desactivación de "${b.dataset.nombre}"?`))) return;
-  const r = await api.solicitarDesactivacion(b.dataset.id);
-  if (r.ok) { toast(r.data.mensaje); cargar(); } else toast(r.data?.mensaje || 'Error', 'err');
+  const api = b.dataset.tipo === 'DIVISION' ? Api.divisiones : Api.carreras;
+  const enviar = b.dataset.accion === 'enviar';
+  const pregunta = enviar ? `¿Enviar a aprobación "${b.dataset.nombre}"?` : `¿Solicitar la desactivación de "${b.dataset.nombre}"?`;
+  if (!(await confirmar(pregunta))) return;
+  const r = enviar ? await api.enviarAprobacion(b.dataset.id) : await api.solicitarDesactivacion(b.dataset.id);
+  if (r.ok) { toast(r.data.mensaje); cargarOferta(); } else toast(r.data?.mensaje || 'Error', 'err');
 });
-cargar();
+
+let t; $nombre.addEventListener('input', () => { clearTimeout(t); t = setTimeout(cargarOferta, 300); });
+$div.addEventListener('change', cargarOferta);
+cargarDivisiones(); cargarOferta();
 </script>
 </body></html>

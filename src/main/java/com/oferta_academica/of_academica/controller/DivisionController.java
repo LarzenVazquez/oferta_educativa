@@ -128,6 +128,36 @@ public class DivisionController {
         return ResponseEntity.ok(respuesta);
     }
 
+    // HU08: enviar a aprobacion (registro nuevo o modificado)
+    @PatchMapping("/{id}/enviar-aprobacion")
+    public ResponseEntity<?> enviarAAprobacion(@PathVariable Long id) {
+        Optional<Division> encontrada = divisionRepository.findById(id);
+        if (encontrada.isEmpty()) {
+            return mensaje(HttpStatus.NOT_FOUND, "No existe la división con id " + id);
+        }
+        Division division = encontrada.get();
+
+        EstadoAprobacion estado = division.getEstadoAprobacion();
+        if (tieneSolicitudPendiente(division)) {
+            return mensaje(HttpStatus.CONFLICT, "La división ya tiene una solicitud en revisión");
+        }
+        if (estado == EstadoAprobacion.APROBADO) {
+            return mensaje(HttpStatus.CONFLICT, "La división ya está aprobada");
+        }
+        if (estado == EstadoAprobacion.INACTIVO) {
+            return mensaje(HttpStatus.CONFLICT, "La división está inactiva y no se puede enviar a aprobación");
+        }
+
+        division.setEstadoAprobacion(EstadoAprobacion.PENDIENTE);
+        division.setMotivoRechazo(null);
+        Division guardada = divisionRepository.save(division);
+
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("mensaje", "Enviada a aprobación");
+        respuesta.put("division", guardada);
+        return ResponseEntity.ok(respuesta);
+    }
+
     // Mientras el Secretario revisa, no se puede modificar
     private boolean tieneSolicitudPendiente(Division division) {
         return division.getEstadoAprobacion() == EstadoAprobacion.PENDIENTE

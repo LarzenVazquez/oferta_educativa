@@ -7,6 +7,7 @@ const ESTADO_LABEL = {
   BORRADOR: 'Borrador', PENDIENTE: 'Pendiente', PENDIENTE_DESACTIVACION: 'Pend. desactivación',
   APROBADO: 'Aprobado', RECHAZADO: 'Rechazado', INACTIVO: 'Inactivo', ACTIVO: 'Activo'
 };
+const MODALIDAD_LABEL = { ESCOLARIZADA: 'Escolarizada', MIXTA: 'Mixta', EN_LINEA: 'En línea' };
 
 // Devuelve { ok, status, data }. 400 => data = { campo: mensaje }, otros => data = { mensaje }
 async function request(path, options = {}) {
@@ -26,6 +27,7 @@ async function request(path, options = {}) {
 
 const Api = {
   divisiones: {
+<<<<<<< HEAD
       listar: () => request('/divisiones'),
       obtener: id => request(`/divisiones/${id}`),
       crear: body => request('/divisiones', { method: 'POST', body }),
@@ -42,6 +44,30 @@ const Api = {
       listarSolicitudes: () => request('/secretario/solicitudes'),
       aprobar: (tipo, id) => request(`/secretario/${tipo.toLowerCase() === 'division' ? 'divisiones' : 'carreras'}/${id}/aprobar`, { method: 'PATCH' }),
       rechazar: (tipo, id, motivoRechazo) => request(`/secretario/${tipo.toLowerCase() === 'division' ? 'divisiones' : 'carreras'}/${id}/rechazar`, { method: 'PATCH', body: { motivoRechazo } })
+=======
+    listar: () => request('/divisiones'),
+    obtener: id => request(`/divisiones/${id}`),
+    crear: body => request('/divisiones', { method: 'POST', body }),
+    editar: (id, body) => request(`/divisiones/${id}`, { method: 'PUT', body }),
+    enviarAprobacion: id => request(`/divisiones/${id}/enviar-aprobacion`, { method: 'PATCH' }),
+    solicitarDesactivacion: id => request(`/divisiones/${id}/solicitar-desactivacion`, { method: 'PATCH' })
+  },
+  carreras: {
+    listar: () => request('/carreras'),
+    obtener: id => request(`/carreras/${id}`),
+    crear: body => request('/carreras', { method: 'POST', body }),
+    editar: (id, body) => request(`/carreras/${id}`, { method: 'PUT', body }),
+    enviarAprobacion: id => request(`/carreras/${id}/enviar-aprobacion`, { method: 'PATCH' }),
+    solicitarDesactivacion: id => request(`/carreras/${id}/solicitar-desactivacion`, { method: 'PATCH' })
+  },
+  oferta: {
+    listar: (nombre, divisionId) => {
+      const p = new URLSearchParams();
+      if (nombre) p.set('nombre', nombre);
+      if (divisionId) p.set('divisionId', divisionId);
+      return request('/oferta' + (p.toString() ? '?' + p : ''));
+    }
+>>>>>>> upstream/main
   }
 };
 
@@ -106,6 +132,10 @@ function renderHeader(activo) {
     <header class="top"><h1>Oferta Académica</h1><nav>
       <a href="index.html">Oferta</a>
       <a href="division-form.html">+ División</a>
+<<<<<<< HEAD
       <a href="panel-secretario.html">Panel Secretario</a>
+=======
+      <a href="carrera-form.html">+ Carrera</a>
+>>>>>>> upstream/main
     </nav></header>`);
 }
