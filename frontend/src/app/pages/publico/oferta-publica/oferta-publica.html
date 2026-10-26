@@ -1,0 +1,41 @@
+<section class="hero">
+  <h2>Conoce nuestra oferta educativa</h2>
+  <p>Explora las divisiones académicas y elige la carrera que más te interese.</p>
+  @if (!cargando() && !errorCarga()) {
+    <div class="contadores">
+      <span class="chip claro">{{ divisiones().length }} divisiones</span>
+      <span class="chip claro">{{ totalCarreras() }} carreras</span>
+    </div>
+  }
+</section>
+
+@if (cargando()) {
+  <div class="card empty">Cargando oferta…</div>
+} @else if (errorCarga()) {
+  <div class="card empty">No se pudo cargar la oferta educativa</div>
+} @else {
+  @for (d of divisiones(); track d.id) {
+    <section class="card division">
+      <h3>{{ d.nombre }}</h3>
+      <p class="sub">{{ d.descripcion }}</p>
+
+      <div class="grid-carreras">
+        @for (c of d.carreras; track c.id) {
+          <a class="carrera-card" [routerLink]="['/oferta-publica/carrera', c.id]">
+            <h4>{{ c.nombre }}</h4>
+            <p>{{ c.descripcion }}</p>
+            <div class="meta">
+              <span class="chip">{{ modalidadLabel[c.modalidad] }}</span>
+              <span class="chip">{{ c.duracionCuatrimestres }} cuatrimestres</span>
+            </div>
+            <span class="ver-mas">Ver detalle →</span>
+          </a>
+        } @empty {
+          <p class="empty">Esta división aún no tiene carreras publicadas.</p>
+        }
+      </div>
+    </section>
+  } @empty {
+    <div class="card empty">Por ahora no hay oferta publicada.</div>
+  }
+}

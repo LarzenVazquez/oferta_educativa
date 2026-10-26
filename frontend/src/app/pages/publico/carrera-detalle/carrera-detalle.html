@@ -1,0 +1,26 @@
+<a class="volver" routerLink="/oferta-publica">← Volver a la oferta educativa</a>
+
+@if (carrera(); as c) {
+  <article class="card detalle-carrera">
+    <span class="tipo">{{ c.division.nombre }}</span>
+    <h2>{{ c.nombre }}</h2>
+
+    <div class="datos">
+      <div class="dato">
+        <span class="etiqueta">Modalidad</span>
+        <span class="valor">{{ modalidadLabel[c.modalidad] }}</span>
+      </div>
+      <div class="dato">
+        <span class="etiqueta">Duración</span>
+        <span class="valor">{{ c.duracionCuatrimestres }} cuatrimestres</span>
+      </div>
+    </div>
+
+    <h3>Descripción</h3>
+    <p class="texto">{{ c.descripcion }}</p>
+  </article>
+} @else if (error()) {
+  <div class="card empty">{{ error() }}</div>
+} @else {
+  <div class="card empty">Cargando…</div>
+}

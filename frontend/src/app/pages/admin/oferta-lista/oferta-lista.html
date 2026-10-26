@@ -1,0 +1,76 @@
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h2>Oferta académica</h2>
+      <p class="sub">Divisiones y carreras registradas, con su estado de aprobación</p>
+    </div>
+    <div class="contadores">
+      <span class="chip">{{ totalDivisiones() }} divisiones</span>
+      <span class="chip">{{ totalCarreras() }} carreras</span>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input type="search" placeholder="Buscar por nombre…" aria-label="Buscar por nombre"
+           [(ngModel)]="nombre" (input)="alEscribir()">
+    <select aria-label="Filtrar por división" [(ngModel)]="divisionId" (ngModelChange)="cargarOferta()">
+      <option [ngValue]="null">Todas las divisiones</option>
+      @for (d of divisiones(); track d.id) {
+        <option [ngValue]="d.id">{{ d.nombre }}</option>
+      }
+    </select>
+    <span class="spacer"></span>
+    <a class="btn" routerLink="/admin/divisiones/nueva">+ División</a>
+    <a class="btn" routerLink="/admin/carreras/nueva">+ Carrera</a>
+  </div>
+
+  <div class="tabla-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo</th><th>Nombre</th><th>División</th><th>Estatus</th><th>Aprobación</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando()) {
+          <tr><td colspan="6" class="empty">Cargando…</td></tr>
+        } @else if (errorCarga()) {
+          <tr><td colspan="6" class="empty">No se pudo cargar la oferta</td></tr>
+        } @else {
+          @for (f of filas(); track f.tipo + f.id) {
+            <tr [class.fila-carrera]="f.tipo === 'CARRERA'">
+              <td class="tipo">{{ tipoLabel[f.tipo] }}</td>
+              <td class="nombre">
+                @if (f.tipo === 'CARRERA') { <span class="sangria">↳</span> }
+                {{ f.nombre }}
+              </td>
+              <td>{{ f.division }}</td>
+              <td><app-estado-badge [valor]="f.estatus" /></td>
+              <td>
+                <app-estado-badge [valor]="f.estadoAprobacion" />
+                @if (f.estadoAprobacion === 'RECHAZADO' && f.motivoRechazo) {
+                  <div class="motivo">Motivo: {{ f.motivoRechazo }}</div>
+                }
+              </td>
+              <td class="actions">
+                @if (puedeEditar(f)) {
+                  <a class="btn sm secondary" [routerLink]="rutaEditar(f)">Editar</a>
+                } @else {
+                  <button class="btn sm secondary" disabled>Editar</button>
+                }
+                <button class="btn sm" [disabled]="!puedeEnviar(f)" (click)="ejecutar('enviar', f)">
+                  Enviar a aprobación
+                </button>
+                <button class="btn sm danger" [disabled]="!puedeDesactivar(f)" (click)="ejecutar('desactivar', f)">
+                  Solicitar desactivación
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="empty">Sin resultados</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
