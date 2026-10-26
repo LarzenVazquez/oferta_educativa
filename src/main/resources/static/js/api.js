@@ -41,11 +41,9 @@ const Api = {
     solicitarDesactivacion: id => request(`/carreras/${id}/solicitar-desactivacion`, { method: 'PATCH' }),
     rechazar: (id, motivo) => request(`/carreras/${id}/rechazar`, { method: 'PATCH', body: { motivo } })
   },
-  // Rol Secretario: bandeja de solicitudes, aprobar y rechazar. tipo = 'DIVISION' | 'CARRERA'
   secretario: {
     listarSolicitudes: () => request('/secretario/solicitudes'),
-    aprobar: (tipo, id) => request(`/secretario/${rutaTipo(tipo)}/${id}/aprobar`, { method: 'PATCH' }),
-    rechazar: (tipo, id, motivoRechazo) => request(`/secretario/${rutaTipo(tipo)}/${id}/rechazar`, { method: 'PATCH', body: { motivoRechazo } })
+    aprobar: (tipo, id) => request(`/secretario/${tipo.toLowerCase() === 'division' ? 'divisiones' : 'carreras'}/${id}/aprobar`, { method: 'PATCH' })
   },
   oferta: {
     listar: (nombre, divisionId) => {
@@ -57,10 +55,7 @@ const Api = {
   }
 };
 
-function rutaTipo(tipo) {
-  return String(tipo).toUpperCase() === 'DIVISION' ? 'divisiones' : 'carreras';
-}
-
+// ---------- UI helpers ----------
 function toast(texto, tipo = 'ok') {
   let box = document.getElementById('toast');
   if (!box) { box = document.createElement('div'); box.id = 'toast'; document.body.appendChild(box); }
@@ -133,10 +128,9 @@ function limpiarErrores(form) {
 }
 function pintarErrores(form, errores) {
   Object.entries(errores).forEach(([campo, msg]) => {
-    const nombre = campo === 'division' ? 'divisionId' : campo;
-    const div = form.querySelector(`.error[data-for="${nombre}"]`);
+    const div = form.querySelector(`.error[data-for="${campo}"]`);
     if (div) div.textContent = msg;
-    const input = form.elements[nombre];
+    const input = form.elements[campo];
     if (input) input.classList.add('invalid');
   });
 }
@@ -151,7 +145,7 @@ function idDeUrl() {
   return id ? Number(id) : null;
 }
 
-function renderHeader(activo) {
+function renderHeader() {
   document.body.insertAdjacentHTML('afterbegin', `
     <header class="top"><h1>Oferta Académica</h1><nav>
       <a href="index.html">Oferta</a>

@@ -43,7 +43,7 @@ async function init() {
   const c = r.data;
   form.nombre.value = c.nombre; form.descripcion.value = c.descripcion;
   form.duracionCuatrimestres.value = c.duracionCuatrimestres; form.modalidad.value = c.modalidad;
-  form.divisionId.value = c.division.id;
+  form.divisionId.value = c.divisionId;
   if (c.estadoAprobacion === 'RECHAZADO' && c.motivoRechazo)
     document.getElementById('aviso').innerHTML = `<div class="note red"><b>Rechazada:</b> ${esc(c.motivoRechazo)}</div>`;
   if (['PENDIENTE', 'PENDIENTE_DESACTIVACION'].includes(c.estadoAprobacion)) {
@@ -58,7 +58,7 @@ form.addEventListener('submit', async e => {
     nombre: form.nombre.value, descripcion: form.descripcion.value,
     duracionCuatrimestres: form.duracionCuatrimestres.value ? Number(form.duracionCuatrimestres.value) : null,
     modalidad: form.modalidad.value || null,
-    division: form.divisionId.value ? { id: Number(form.divisionId.value) } : null
+    divisionId: form.divisionId.value ? Number(form.divisionId.value) : null
   };
   const r = id ? await Api.carreras.editar(id, body) : await Api.carreras.crear(body);
   if (r.ok) { toast(r.data.mensaje); setTimeout(() => location.href = 'index.html', 700); }

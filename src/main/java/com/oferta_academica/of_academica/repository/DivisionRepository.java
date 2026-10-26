@@ -11,7 +11,7 @@ public interface DivisionRepository extends JpaRepository<Division, Long> {
 
     List<Division> findAllByOrderByNombreAsc();
 
-    List<Division> findByEstadoAprobacionIn(List<EstadoAprobacion> estados);
+    List<Division> findByEstadoAprobacionInOrderByNombreAsc(List<EstadoAprobacion> estados);
 
     boolean existsByNombreIgnoreCase(String nombre);
 
