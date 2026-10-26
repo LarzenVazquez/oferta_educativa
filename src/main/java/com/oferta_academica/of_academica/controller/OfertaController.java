@@ -47,13 +47,13 @@ public class OfertaController {
         for (Division division : divisiones) {
             if (division.getNombre().toLowerCase().contains(busqueda)) {
                 resultado.add(fila("DIVISION", division.getId(), division.getNombre(), division.getNombre(),
-                        division.getEstatus(), division.getEstadoAprobacion()));
+                        division.getEstatus(), division.getEstadoAprobacion(), division.getMotivoRechazo()));
             }
 
             for (Carrera carrera : carreraRepository.findByDivisionIdOrderByNombreAsc(division.getId())) {
                 if (carrera.getNombre().toLowerCase().contains(busqueda)) {
                     resultado.add(fila("CARRERA", carrera.getId(), carrera.getNombre(), division.getNombre(),
-                            carrera.getEstatus(), carrera.getEstadoAprobacion()));
+                            carrera.getEstatus(), carrera.getEstadoAprobacion(), carrera.getMotivoRechazo()));
                 }
             }
         }
@@ -61,7 +61,7 @@ public class OfertaController {
     }
 
     private Map<String, Object> fila(String tipo, Long id, String nombre, String division,
-            Estatus estatus, EstadoAprobacion estadoAprobacion) {
+            Estatus estatus, EstadoAprobacion estadoAprobacion, String motivoRechazo) {
         Map<String, Object> fila = new LinkedHashMap<>();
         fila.put("tipo", tipo);
         fila.put("id", id);
@@ -69,6 +69,7 @@ public class OfertaController {
         fila.put("division", division);
         fila.put("estatus", estatus);
         fila.put("estadoAprobacion", estadoAprobacion);
+        fila.put("motivoRechazo", motivoRechazo); // HU09
         return fila;
     }
 }
