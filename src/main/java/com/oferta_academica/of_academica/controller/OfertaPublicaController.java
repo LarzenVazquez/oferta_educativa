@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,6 +38,7 @@ public class OfertaPublicaController {
     @Autowired
     private CarreraRepository carreraRepository;
 
+    // HU14: Ver las divisiones y sus carreras en la página web
     @Transactional(readOnly = true)
     @GetMapping
     public List<Map<String, Object>> listar() {
@@ -64,6 +68,39 @@ public class OfertaPublicaController {
             resultado.add(md);
         }
         return resultado;
+    }
+
+    // HU15: Ver el detalle de una carrera (descripción, duración y modalidad)
+    @Transactional(readOnly = true)
+    @GetMapping("/carrera/{id}")
+    public ResponseEntity<?> verDetalleCarrera(@PathVariable Long id) {
+        Optional<Carrera> carreraOpt = carreraRepository.findById(id);
+        
+        if (carreraOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Carrera c = carreraOpt.get();
+        Division d = c.getDivision();
+        
+        // Validar que tanto la carrera como su división sean visibles públicamente
+        if (!visible(c.isPublicado(), c.getEstadoAprobacion()) || !visible(d.isPublicado(), d.getEstadoAprobacion())) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Map<String, Object> mc = new LinkedHashMap<>();
+        mc.put("id", c.getId());
+        mc.put("nombre", c.getNombre());
+        mc.put("descripcion", c.getDescripcion());
+        mc.put("duracionCuatrimestres", c.getDuracionCuatrimestres());
+        mc.put("modalidad", c.getModalidad());
+        
+        Map<String, Object> md = new LinkedHashMap<>();
+        md.put("id", d.getId());
+        md.put("nombre", d.getNombre());
+        mc.put("division", md);
+
+        return ResponseEntity.ok(mc);
     }
 
     private boolean visible(boolean publicado, EstadoAprobacion estado) {
