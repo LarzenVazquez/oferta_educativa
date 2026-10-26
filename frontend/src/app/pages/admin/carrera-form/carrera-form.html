@@ -1,0 +1,69 @@
+<div class="card form-card">
+  <div class="card-head">
+    <div>
+      <h2>{{ id() ? 'Editar carrera' : 'Registrar carrera' }}</h2>
+      <p class="sub">Cada carrera pertenece a una división</p>
+    </div>
+    @if (actual(); as c) {
+      <app-estado-badge [valor]="c.estadoAprobacion" />
+    }
+  </div>
+
+  @if (actual(); as c) {
+    @if (bloqueado()) {
+      <div class="note">Tiene una solicitud en revisión; no se puede modificar.</div>
+    } @else if (c.estadoAprobacion === 'RECHAZADO' && c.motivoRechazo) {
+      <div class="note red"><b>Rechazada:</b> {{ c.motivoRechazo }}</div>
+    }
+  }
+
+  <form novalidate (ngSubmit)="guardar()">
+    <div class="field">
+      <label for="nombre">Nombre <span class="req">*</span></label>
+      <input id="nombre" name="nombre" maxlength="150" [class.invalid]="errores()['nombre']" [(ngModel)]="modelo.nombre">
+      <div class="error">{{ errores()['nombre'] }}</div>
+    </div>
+
+    <div class="field">
+      <label for="descripcion">Descripción <span class="req">*</span></label>
+      <textarea id="descripcion" name="descripcion" maxlength="1000" [class.invalid]="errores()['descripcion']"
+                [(ngModel)]="modelo.descripcion"></textarea>
+      <div class="error">{{ errores()['descripcion'] }}</div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="duracionCuatrimestres">Duración (cuatrimestres) <span class="req">*</span></label>
+        <input id="duracionCuatrimestres" name="duracionCuatrimestres" type="number" min="1"
+               [class.invalid]="errores()['duracionCuatrimestres']" [(ngModel)]="modelo.duracionCuatrimestres">
+        <div class="error">{{ errores()['duracionCuatrimestres'] }}</div>
+      </div>
+      <div class="field">
+        <label for="modalidad">Modalidad <span class="req">*</span></label>
+        <select id="modalidad" name="modalidad" [class.invalid]="errores()['modalidad']" [(ngModel)]="modelo.modalidad">
+          <option [ngValue]="null">Selecciona…</option>
+          @for (m of modalidades; track m[0]) {
+            <option [ngValue]="m[0]">{{ m[1] }}</option>
+          }
+        </select>
+        <div class="error">{{ errores()['modalidad'] }}</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="divisionId">División <span class="req">*</span></label>
+      <select id="divisionId" name="divisionId" [class.invalid]="errores()['divisionId']" [(ngModel)]="modelo.divisionId">
+        <option [ngValue]="null">Selecciona…</option>
+        @for (d of divisiones(); track d.id) {
+          <option [ngValue]="d.id">{{ d.nombre }}</option>
+        }
+      </select>
+      <div class="error">{{ errores()['divisionId'] }}</div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn" type="submit" [disabled]="bloqueado() || guardando()">Guardar</button>
+      <a class="btn secondary" routerLink="/admin/oferta">Cancelar</a>
+    </div>
+  </form>
+</div>

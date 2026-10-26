@@ -8,7 +8,7 @@ página web.
 
 - Java 21, Spring Boot 4 (Web MVC, Data JPA, Validation)
 - H2 en memoria
-- Frontend provisional: HTML + JavaScript en `src/main/resources/static`
+- Frontend: Angular 22 en `frontend/` (ver `frontend/README.md`)
 
 ## Ejecutar
 
@@ -16,7 +16,8 @@ página web.
 ./mvnw spring-boot:run        # Windows: mvnw.cmd spring-boot:run
 ```
 
-- Frontend: http://localhost:8080
+- API: http://localhost:8080
+- Frontend: `cd frontend`, `npm install` y `npm start` -> http://localhost:4200
 - Consola H2: http://localhost:8080/h2-console (JDBC URL `jdbc:h2:mem:oferta_educativa`, usuario `sa`, sin contraseña)
 
 ## Estructura del backend

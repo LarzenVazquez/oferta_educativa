@@ -1,0 +1,48 @@
+<div class="card form-card">
+  <div class="card-head">
+    <div>
+      <h2>{{ id() ? 'Editar división' : 'Registrar división' }}</h2>
+      <p class="sub">Las divisiones agrupan las carreras por área académica</p>
+    </div>
+    @if (actual(); as d) {
+      <app-estado-badge [valor]="d.estadoAprobacion" />
+    }
+  </div>
+
+  @if (actual(); as d) {
+    @if (bloqueado()) {
+      <div class="note">Tiene una solicitud en revisión; no se puede modificar.</div>
+    } @else if (d.estadoAprobacion === 'RECHAZADO' && d.motivoRechazo) {
+      <div class="note red"><b>Rechazada:</b> {{ d.motivoRechazo }}</div>
+    }
+  }
+
+  <form novalidate (ngSubmit)="guardar()">
+    <div class="field">
+      <label for="nombre">Nombre <span class="req">*</span></label>
+      <input id="nombre" name="nombre" maxlength="150" [class.invalid]="errores()['nombre']" [(ngModel)]="modelo.nombre">
+      <div class="error">{{ errores()['nombre'] }}</div>
+    </div>
+
+    <div class="field">
+      <label for="descripcion">Descripción <span class="req">*</span></label>
+      <textarea id="descripcion" name="descripcion" maxlength="1000" [class.invalid]="errores()['descripcion']"
+                [(ngModel)]="modelo.descripcion"></textarea>
+      <div class="error">{{ errores()['descripcion'] }}</div>
+    </div>
+
+    <div class="field">
+      <label for="estatus">Estatus <span class="req">*</span></label>
+      <select id="estatus" name="estatus" [class.invalid]="errores()['estatus']" [(ngModel)]="modelo.estatus">
+        <option value="ACTIVO">Activo</option>
+        <option value="INACTIVO">Inactivo</option>
+      </select>
+      <div class="error">{{ errores()['estatus'] }}</div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn" type="submit" [disabled]="bloqueado() || guardando()">Guardar</button>
+      <a class="btn secondary" routerLink="/admin/oferta">Cancelar</a>
+    </div>
+  </form>
+</div>
